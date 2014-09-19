@@ -1,0 +1,28 @@
+## format: comment lines start with #.
+## parameter lines are paramname = paramval (nothing else).
+## radeczorsim must come first so we can properly interpret the rest of the lines! radecz format (0) or simulation (x,y,z; 1).
+radeczorsim = 1 
+## default is Mpc/h units of distance, in which case, hfid is unused.  Set to 1 for Mpc (no h).
+unitsMpc = 0 
+## if you're working with a simulation, set om/h to values of simulation (unless you're playing with the Alcock-Paczynski effect).  BEWARE THE VELOCITY CONVERSION FACTOR USES THIS OMFID VALUE!
+omfid = 0.29 
+hfid = 0.7
+binfname = xibinfiles/bin1simssmall.txt
+foutbase = outputsims/testing.txt
+Dftype = 1
+Dfilename = ../BIDS/xi/usecase/PB00_0.6452.halosoldfmt.short
+## parameters for simulations only.
+# simulation box size.
+Lbox = 1380.0
+abox = 0.6452
+zspaceaxis = 2
+#optional (sim boxes only, for cross correlations and/or mass bin cuts.)
+#lg10Mmin = 
+#lg10Mmax = 
+#lg10Mmin2 = 
+#lg10Mmax2 = 
+### these are for if you want to read in dark matter particles from a different file to do the cross-correlation.  Mmin2 and Mmax2 will be overwritten to -1, 17.
+#D2ftype = 
+#D2filename =
+#APperp = 
+#APpar =  
