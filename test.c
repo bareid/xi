@@ -21,6 +21,8 @@ int printit(xibindat b) {
 
 int hellop(dataset d1) {
 
+  printf("hey beth: %d\n",d1.np);
+
   int i,j;
   int mymax = d1.np;
   if(d1.np > 10) {
@@ -35,5 +37,19 @@ int hellop(dataset d1) {
     printf("%e ",d1.vz[i]);
     printf("%e\n",d1.wgt[i]);
     }
+  printf("hey beth: %d\n",d1.np);
+  return 0;
+  }
+
+int testsingle(double *px, int np) {
+  int i,j;
+  int mymax = np;
+  if(np > 10) {
+    mymax = 10;
+    }
+  for(i=0;i<mymax;i++) {
+    printf("%e\n",px[i]);
+    }
+  printf("hey beth: %d\n",np);
   return 0;
   }

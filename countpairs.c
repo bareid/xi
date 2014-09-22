@@ -554,6 +554,75 @@ int countpairssim(particle *p1, int np1, particle *p2, int np2, real Lbox, xibin
   return 0;
   } //end countpairssims
 
+//functions that can be called from python instead of c.
+int countpairssimP(real *p1, real *v1, real *w1, int np1, real *p2, real *v2, real *w2, int np2, real Lbox, xibindat b, real APperp, real APpar, long double *Npairsfinal) {
+
+  assert(b.zspaceaxis >= 0 && b.zspaceaxis <= 2); //if originally -1, xi.c sets it to 0 and realorzspace = 0.
+  angwgt awgt;
+  awgt.ntheta = -1; //this thing should never get used for sims!
+
+  cntparams cp;
+
+  int i,j;
+  int sepopt;
+  int autoorcross = 0;
+
+  if(np2 > 0) {
+    assert(p2 != NULL);
+    autoorcross = 1;
+    }
+
+  cntparticle *ctot;
+  int ntot = np1 + np2;
+  ctot = (cntparticle *) malloc(sizeof(cntparticle)*(ntot));
+
+
+  //set global variables for Lbox, originpos, and APscale.
+  cp.Lbox = Lbox;
+  for(i=0;i<=2;i++) {
+    cp.originpos[i] = 0.;
+    }
+
+  for(i=0;i<=2;i++) {
+    cp.APscale[i] = APperp;
+    }
+  if(b.realorzspace == 0) {
+    assert(APperp == APpar);
+    }
+  else { //calculation in redshift space.
+    cp.APscale[b.zspaceaxis] = APpar;
+    }
+  setpairrminmax(b, 1, APperp, APpar, &cp);
+  sepopt = 2; // will do velocity or regular pair counts.
+
+  //change type to cntparticle, put in one list and sort.
+  for(i=0;i<np1;i++) {
+    for(j=0;j<=2;j++) {
+      ctot[i].pos[j] = p1[i].pos[j]; //no originpos
+      #ifdef VOPT
+      ctot[i].vel[j] = p1[i].vel[j];
+      #endif
+      ctot[i].wgt = p1[i].weight;
+      ctot[i].DorR = 0;
+      }
+    }
+  for(i=0;i<np2;i++) {
+    for(j=0;j<=2;j++) {
+      ctot[i+np1].pos[j] = p2[i].pos[j];
+      #ifdef VOPT
+      ctot[i+np1].vel[j] = p2[i].vel[j];
+      #endif
+      ctot[i+np1].wgt = p2[i].weight;
+      ctot[i+np1].DorR = 1;
+      }
+    }
+
+  countpairs(ctot,ntot,autoorcross,sepopt,b,awgt,&cp,Npairsfinal);
+  free(ctot);
+  return 0;
+  } //end countpairssims
+
+
 //BR: generalize to read in ra,dec and do the spherical coordinate transformation here?  LATER.
 int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal) {
 
