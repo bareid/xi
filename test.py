@@ -90,4 +90,11 @@ d3 = dset(px.ctypes.data_as(c_void_p),py.ctypes.data_as(c_void_p),pz.ctypes.data
           www.ctypes.data_as(c_void_p),len(px))
 test.hellop(d3)
 
+aa = np.loadtxt("/Users/bareid/gitprojects/BIDS/xi/usecase/PB00_0.6452.halos.short")
+print aa.shape
+
+d4 = dset((aa[:,0]).ctypes.data_as(c_void_p), (aa[:,1]).ctypes.data_as(c_void_p), (aa[:,2]).ctypes.data_as(c_void_p),\
+          (aa[:,0]).ctypes.data_as(c_void_p), (aa[:,1]).ctypes.data_as(c_void_p), (aa[:,2]).ctypes.data_as(c_void_p),\
+          (aa[:,3]).ctypes.data_as(c_void_p))
+test.hellop(d4)
 
