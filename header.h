@@ -213,7 +213,7 @@ void printxigridwNp(char *outfname, char *outfnameNp, xibindat b, int n_gal, int
 int wpperiodic(long double *Npairsfinal, xibindat b, int n_gal, real Lbox, real APperp, real APpar, double *wp);
 int wpNprebin(long double *Npairsfinal, xibindat b, long double **Npout);
 void printwp(char *outfname, xibindat b, double *wp);
-void printNpairsgeneric(long double *Npairsfinal, xibindat b);
+void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int DRopt,int n1, long double n1wgt, long double n2wgt,char *binfname);
 void printNpairssim(int n1, int n2, int autoorcross, xibindat b, real Lbox, real APperp, real APpar, char *foutbase, long double *Npairsfinal);
 //end functions from output.c
 

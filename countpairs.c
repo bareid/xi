@@ -172,6 +172,14 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
   //precompute which cells are kept and which aren't.
   closenbrs = (int *) malloc(sizeof(int)*nnbrsmax);
 
+  //stuff to keep track of cell-> list map.
+  int cellmax = cp->Ncell*cp->Ncell*cp->Ncell;
+  int *cellstart, *cellend, *occupiedcells;
+  cellstart = (int *) malloc(sizeof(int)*cellmax);
+  cellend = (int *) malloc(sizeof(int)*cellmax);
+  occupiedcells = (int *) malloc(sizeof(int)*cellmax);
+  int noccupied;
+
 /*
   int nbrs[((2*NFAC+1)*(2*NFAC+1)*(2*NFAC+1))];
   int closenbrs[((2*NFAC+1)*(2*NFAC+1)*(2*NFAC+1))];
@@ -198,18 +206,16 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
     for(j=0;j<=2;j++) {
       ipos[j] = ((int) floor(plist[i].pos[j]*cp->Ncell/cp->Lbox));
       #ifdef SANITYCHECKS
+      if(!(ipos[j] >= 0 && ipos[j] < cp->Ncell)) {
+        printf("%d %e %e %d %d\n",i,plist[i].pos[j],plist[i].pos[j]/cp->Lbox,cp->Ncell,ipos[j]);
+        }
       assert(ipos[j] >= 0 && ipos[j] < cp->Ncell);
       #endif
       }
     plist[i].cell = i2n(ipos,cp->Ncell);
     }
   qsort(plist,np,sizeof(cntparticle),compare_cntparticle_sort); 
-  int cellmax = cp->Ncell*cp->Ncell*cp->Ncell;
-  int *cellstart, *cellend, *occupiedcells;
-  cellstart = (int *) malloc(sizeof(int)*cellmax);
-  cellend = (int *) malloc(sizeof(int)*cellmax);
-  occupiedcells = (int *) malloc(sizeof(int)*cellmax);
-  int noccupied;
+
 
   //this indicates no objects in the cells.
   for(i=0;i<cellmax;i++) {
@@ -220,7 +226,6 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
   //check what the sorted list looks like.
   assert(plist[0].cell >= 0);
   int currcell = plist[0].cell;
-  printf("yoyo %d %d\n",plist[0].cell,cellmax);
   cellstart[currcell] = 0;
   assert(plist[np-1].cell < cellmax);
 
@@ -405,7 +410,6 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
           switch(sepopt) {
             case(0): //sepopt = 0: regular 3d correlation function on radecz.
           inbin = addpairsky3d(plist[xa].pos, plist[ya].pos, b, cp, &bin2d, &angsep);
-
           //old sanity check revive if I am bug-hunting again.
 /*
               #ifdef SANITYCHECKS
@@ -427,6 +431,10 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
           #else
           inbin = addpairperiodic(plist[xa].pos, plist[ya].pos, vtmp1, vtmp2, b, cp, &bin2d, &vr, &v2perp, &v2par);
           #endif
+          break; //end sepopt = 2
+            default:
+          exit(1);
+          } //end switch on sepopt (type of pair counter).
           if(inbin == 1) {
             if(angwgtopt == 1) {
               pairwgt = ((long double) (plist[xa].wgt*plist[ya].wgt*fbangweight(angsep,awgt)));
@@ -452,26 +460,23 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
               #endif
               }
             } //end if inbin == 1
-          break; //end sepopt = 2
-            default:
-          exit(1);
-          } //end switch on sepopt (type of pair counter).
           } //end ya loop.
         } //end xa loop.
       } //end nn loop over icell neighbors.
     } //end icell loop
 
   //now sum pair counts.  Put all counts in the first NRBINS.
+  long double bigsum = 0.;
   for(i=0;i<b.nx;i++) {
     for(k=0;k<b.ny;k++) {
       for(j=1;j<nthreads;j++) {
         Npairs[i*b.ny+k] += Npairs[bin2dtot*j+i*b.ny+k];
         }
       Npairsfinal[i*b.ny+k] = Npairs[i*b.ny+k];
-      //printf("%d %d %Le\n",i,k,Npairsfinal[i*b.ny+k]);
+      bigsum += Npairsfinal[i*b.ny+k];
+//      printf("%d %d %Le\n",i,k,Npairsfinal[i*b.ny+k]);
       }
     }
-  
   malloc2dfreeint(nbrs);
   free(closenbrs);
   free(cellstart);
@@ -498,14 +503,18 @@ int countpairssim(particle *p1, int np1, particle *p2, int np2, real Lbox, xibin
   int i,j;
   int sepopt;
   int autoorcross = 0;
+  int ntot;
+  cntparticle *ctot;
 
   if(np2 > 0) {
     assert(p2 != NULL);
     autoorcross = 1;
+    ntot = np1 + np2;
+    }
+  else {
+    ntot = np1;
     }
 
-  cntparticle *ctot;
-  int ntot = np1 + np2;
   ctot = (cntparticle *) malloc(sizeof(cntparticle)*(ntot));
 
 
@@ -640,14 +649,22 @@ int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist,
   int sepopt;
   cntparams cp;
 
+  int ntot;
+  cntparticle *ctot;
+
   if(np2 > 0) {
     assert(p2 != NULL);
     autoorcross = 1;
+    ntot = np1 + np2;
     }
+  else {
+    ntot = np1;
+    }
+  ctot = (cntparticle *) malloc(sizeof(cntparticle)*(ntot));
 
   //determine Lbox given maxdist from the origin in the catalog.
   if(angopt == 0) { //computing a 3d correlation fxn with sky coordinates.
-    cp.Lbox = 2.*maxdist;
+    cp.Lbox = 2.*maxdist*1.01; //avoid floating point rounding errors.
     }
   else { //computing a 2d (angular) correlation fxn with sky coordinates.
     assert(b.bintype == 3);
@@ -656,10 +673,6 @@ int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist,
   for(i=0;i<=2;i++) {
     cp.originpos[i] = (cp.Lbox)*0.5;
     }
-
-  cntparticle *ctot;
-  int ntot = np1 + np2;
-  ctot = (cntparticle *) malloc(sizeof(cntparticle)*(ntot));
 
   for(i=0;i<np1;i++) {
     for(j=0;j<=2;j++) {

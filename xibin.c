@@ -80,6 +80,8 @@ xibindat readbinfile(char *frebin) {
       exit(1);
       }
     b.dy = 1./((double) b.ny);
+    b.miny = 0.;
+    b.logyopt = 0;
     if(b.bintype == 2) {
       assert(b.ny == 1);
       //set it equal to 4 bins, we're going to fill in all of them!

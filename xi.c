@@ -82,6 +82,8 @@ runparams parserunfile(char *infilename) {
   int gotlist[nrunparams];
   int i;
 
+  myparams.DRopt = -1; //for sims.
+
   for(i=0;i<nrunparams;i++) {
     gotlist[i] = 0;
     }
@@ -466,6 +468,9 @@ int main(int argc, char *argv[]) {
   real maxdist2 = -1000.;
   real maxdist; //this will be maxdist between the two catalogs.
 
+  n1wgt = 0.;
+  n2wgt = 0.;
+
   //for 
   c2tmp = NULL;
   assert(c2tmp == NULL);
@@ -516,6 +521,8 @@ int main(int argc, char *argv[]) {
       b.realorzspace = 1;
       }  
     b.periodicopt = 1;  //not fixing this took hours of bug hunting!! gaa!!
+    b.zspaceaxis = runp.zspaceaxis;
+    b.ellmaxdata = 4;
     assert(runp.Dftype >= 0 && runp.Dftype <= 5);
     if(runp.Dftype == 3) {
       if(runp.D2ftype != -1) {
@@ -606,10 +613,11 @@ int main(int argc, char *argv[]) {
   #endif
 
   if(runp.radeczorsim == 0 || b.bintype == 1) {
-    printNpairsgeneric(Npairsfinal,b);
+    printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname);
     }
   else { //sims.
     //still need to debug this.
+    assert(autoorcross==0);
     printNpairssim(n1,n2,autoorcross,b,runp.Lbox,runp.APperp,runp.APpar,runp.foutbase,Npairsfinal);
     }
 

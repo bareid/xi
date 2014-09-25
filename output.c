@@ -533,8 +533,12 @@ void printxigrid(char *outfname, xibindat b, int n_gal, int n2, int autoorcross,
   FILE *ofp;
   ofp = open_file_write(outfname);
   fprintf(ofp,"# nbar1 = %.6Le\n",((long double) n_gal)/myboxvol);
-  fprintf(ofp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
-
+  if(autoorcross == 0) {
+    fprintf(ofp,"# nbar2 = %.6Le\n",((long double) 0.0));
+    }
+  else {
+    fprintf(ofp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
+    }
   if(autoorcross == 0) {
     mynbar = ((long double) n_gal)/myboxvol;
     }
@@ -587,9 +591,15 @@ void printxigridwNp(char *outfname, char *outfnameNp, xibindat b, int n_gal, int
   ofpNp = open_file_write(outfnameNp);
 
   fprintf(ofp,"# nbar1 = %.6Le\n",((long double) n_gal)/myboxvol);
-  fprintf(ofp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
   fprintf(ofpNp,"# nbar1 = %.6Le\n",((long double) n_gal)/myboxvol);
-  fprintf(ofpNp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
+  if(autoorcross == 0) {
+    fprintf(ofp,"# nbar2 = %.6Le\n",((long double) 0.0));
+    fprintf(ofpNp,"# nbar2 = %.6Le\n",((long double) 0.0));
+    }
+  else {
+    fprintf(ofp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
+    fprintf(ofpNp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
+    }
 
   if(autoorcross == 0) {
     mynbar = ((long double) n_gal)/myboxvol;
@@ -735,9 +745,49 @@ void printwp(char *outfname, xibindat b, double *wp) {
 
 //end sims output stuff.
 
-void printNpairsgeneric(long double *Npairsfinal,xibindat b) {
-  real aaa = 0.;
-  //fill in later.
+void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int DRopt,int n1, long double n1wgt, long double n2wgt,char *binfname) {
+
+  double xcen,ycen;
+  char outfnameNp[MAXLINELEN];
+  int i,j;
+  if(DRopt == -1) {
+    sprintf(outfnameNp,"%s.Np",foutbase);
+    }
+  else {
+    sprintf(outfnameNp,"%s.Np.DRopt%d",foutbase,DRopt);
+    }
+  FILE *ofpNp;
+  ofpNp = open_file_write(outfnameNp);
+  if(DRopt != 3) {
+    fprintf(ofpNp,"# nobj: %d\n",n1);
+    fprintf(ofpNp,"# weight sums: %.12Le, %.12Le\n",n1wgt,n2wgt);
+    fprintf(ofpNp,"# binfile = %s\n",binfname);
+    }
+  else {
+    fprintf(ofpNp,"# nobj: %d\n",n1);
+    fprintf(ofpNp,"# weight sums: %.12Le, %.12Le\n",n2wgt,n1wgt);
+    fprintf(ofpNp,"# binfile = %s\n",binfname);
+    }
+
+  for(i=0;i<b.nx;i++) {
+    if(b.logxopt == 0) {
+      xcen = b.minx + (i+0.5)*b.dx;
+      }
+    else {
+      xcen = pow(10.,b.minx + (i+0.5)*b.dx);
+      }
+    for(j=0;j<b.ny;j++) {
+      if(b.logyopt == 0) {
+        ycen = b.miny + (j+0.5)*b.dy;
+        }
+      else {
+        ycen = pow(10.,b.miny + (j+0.5)*b.dy);
+        }
+      fprintf(ofpNp,"%e %e %.12Le\n",xcen,ycen,Npairsfinal[i*b.ny+j]);
+
+      }  //end j loop.
+    } //end loop over b.nx
+  fclose(ofpNp);
   } //end printNpairsradecz
 
 
@@ -819,7 +869,13 @@ void printNpairssim(int n1, int n2, int autoorcross, xibindat b, real Lbox, real
         }
 // print nbar at file header for simplicity.
       fprintf(ofp,"# nbar1 = %.6Le\n",mynbar);
-      fprintf(ofp,"# nbar2 = %.6Le\n",mynbar2);
+      assert(autoorcross == 0);
+      if(autoorcross == 0) {
+        fprintf(ofp,"# nbar2 = %.6Le\n",((long double) 0.0));
+        }
+      else {
+        fprintf(ofp,"# nbar2 = %.6Le\n",((long double) n2)/myboxvol);
+        }
 
       for(i=0;i<b.nx;i++) {
         if(b.logxopt == 1) {

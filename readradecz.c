@@ -248,8 +248,8 @@ switch(ftype) {
     }
 */
   #ifdef REALLYVERBOSE
-  printf("catalog mins: %e %e %e %e\n",comoving_distMpc_lcdm((double) zmax, cosmopfid),posmin[0],posmin[1],posmin[2]);
-  printf("catalog maxs: %e %e %e %e\n",comoving_distMpc_lcdm((double) zmax, cosmopfid),posmax[0],posmax[1],posmax[2]);
+  printf("catalog mins: %e %e %e %e %e\n",comoving_distMpc_lcdm((double) zmax, cosmopfid),comoving_disthinvMpc_lcdm((double) zmax, cosmopfid),posmin[0],posmin[1],posmin[2]);
+  printf("catalog maxs: %e %e %e %e %e\n",comoving_distMpc_lcdm((double) zmax, cosmopfid),comoving_disthinvMpc_lcdm((double) zmax, cosmopfid),posmax[0],posmax[1],posmax[2]);
   #endif
 
   //compute the maximum distance away to set Lbox for this data set.

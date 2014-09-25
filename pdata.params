@@ -1,0 +1,25 @@
+## format: comment lines start with #.
+## parameter lines are paramname = paramval (nothing else).
+## radeczorsim must come first so we can properly interpret the rest of the lines! radecz format (0) or simulation (x,y,z; 1).
+radeczorsim = 0 
+## default is Mpc/h units of distance, in which case, hfid is unused.  Set to 1 for Mpc (no h).
+unitsMpc = 0  
+## if you're working with a simulation, set om/h to values of simulation (unless you're playing with the Alcock-Paczynski effect).
+omfid = 0.274 
+hfid = 0.7
+#binfname = xibinfiles/bin_xilogsmu.txt
+binfname = xibinfiles/bin_xismu1Mpcohtest.txt
+foutbase = outputdr12/cmass-dr12v4-S-Reid
+## dtype 1: ra,dec,z,wgt; 2: ra,dec,z; 3: ra,dec,wgt; 4: ra,dec [last two for w(theta)]
+Dftype = 1
+Rftype = 1
+#Dfilename = /Users/bareid/work/montserratdata/boss/mksamplecatslatestdr12/cmass-dr12v4-S-Reid.dat.txt 
+#Rfilename = /Users/bareid/work/montserratdata/boss/mksamplecatslatestdr12/cmass-dr12v4-S-Reid.ran.txt
+Dfilename = /home/howdiedoo/boss/mksamplecatslatestdr12/cmass-dr12v4-S-Reid.dat.txt
+Rfilename = /home/howdiedoo/boss/mksamplecatslatestdr12/cmass-dr12v4-S-Reid.ran.txt
+zmin = 0.43
+zmax = 0.7
+DRopt = 1
+## these two are optional.  
+#ndownRR = 
+#rngenseed = 

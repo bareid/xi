@@ -207,12 +207,17 @@ int addpairsky3d(const real pos1[], const real pos2[], xibindat b, cntparams *cp
   else {
     xbin = min((int) floor((log10(rsep)-b.minx)/b.dx),b.nx-1);
     }
+  ybin = min(((int) floor((sqrt(mymu2)*b.ny))),b.ny-1);
   #if defined(SANITYCHECKS) && defined(ASSERT_ON)
   assert(xbin < b.nx && xbin >= 0);
   assert(mymu2 >= 0. && mymu2 <= 1.);
   assert(ybin < b.ny && ybin >= 0);
   #endif
-  ybin = min(((int) floor((sqrt(mymu2)*b.ny))),b.ny-1);
+/*
+  if(xbin == 0) {
+    printf("%e %e %e %e %e %e %e %e %e %e %Le %d %d\n",pos1[0],pos2[0],rvec[0],pos1[1],pos2[1],rvec[1],pos1[2],pos2[2],rvec[2],rsep,mymu2,xbin,ybin);
+    }
+*/
   break;
     case(1): //xi_grid
   rpi = rsep*sqrt(mymu2);
