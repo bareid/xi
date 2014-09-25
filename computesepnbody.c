@@ -72,10 +72,6 @@ int addpairperiodic(const real pos1[], const real pos2[], const real vel1[], con
   assert(mymu2 >= 0. && mymu2 <= 1.);
   assert(ybin < b.ny && ybin >= 0);
   #endif
-  if(xbin == 1) {
-    assert(b.zspaceaxis == 2);
-    printf("%e %e %e %e %e %e %e %e %e %e %e %d %d\n",pos1[0],pos2[0],rvec[0],pos1[1],pos2[1],rvec[1],pos1[2],pos2[2],rvec[2],rsep,mymu2,xbin,ybin);
-    }
 
   break;    
     case(1): //xi_grid.

@@ -8,10 +8,10 @@ unitsMpc = 0
 omfid = 0.292 
 hfid = 0.7
 binfname = xibinfiles/bin1simssmall.txt
-foutbase = outputsims/testing.txt
+foutbase = tests/simtestbin1simsmall.txt
 Dftype = 1
 #Dfilename = ../BIDS/xi/usecase/PB00_0.6452.halosoldfmt.short
-Dfilename = /home/howdiedoo/SOmaster/PB00_0.6452.halosoldfmt.short
+Dfilename = tests/PB00_0.6452.halosoldfmt.short
 ## parameters for simulations only.
 # simulation box size.
 Lbox = 1380.0
