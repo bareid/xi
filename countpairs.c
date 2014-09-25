@@ -555,6 +555,8 @@ int countpairssim(particle *p1, int np1, particle *p2, int np2, real Lbox, xibin
   } //end countpairssims
 
 //functions that can be called from python instead of c.
+//doesn't work yet.
+/*
 int countpairssimP(real *p1, real *v1, real *w1, int np1, real *p2, real *v2, real *w2, int np2, real Lbox, xibindat b, real APperp, real APpar, long double *Npairsfinal) {
 
   assert(b.zspaceaxis >= 0 && b.zspaceaxis <= 2); //if originally -1, xi.c sets it to 0 and realorzspace = 0.
@@ -621,7 +623,7 @@ int countpairssimP(real *p1, real *v1, real *w1, int np1, real *p2, real *v2, re
   free(ctot);
   return 0;
   } //end countpairssims
-
+*/
 
 //BR: generalize to read in ra,dec and do the spherical coordinate transformation here?  LATER.
 int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal) {
