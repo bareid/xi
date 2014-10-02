@@ -55,7 +55,7 @@ xibindat readbinfile(char *frebin) {
     printf("error in bintype: binfile header format.  try again\n");
     exit(1);
     }
-  assert(b.bintype == 0 || b.bintype == 1 || b.bintype == 2);
+  assert(b.bintype == 0 || b.bintype == 1 || b.bintype == 2 || b.bintype == 3);
 
   //we need bintype == 2 for velocity statistics.
 
@@ -74,11 +74,18 @@ xibindat readbinfile(char *frebin) {
   //line 3
   fgets(line,MAXLINELEN,ifpbin);
   assert(strstr(line,"ybins:"));
-  if(b.bintype == 0 || b.bintype == 2) {
+  if(b.bintype == 0 || b.bintype == 2 || b.bintype == 3) {
     if(sscanf(line,"# ybins: %d\n",&(b.ny)) != 1) {
       printf("error in ybin: binfile header format. try again!\n");
       exit(1);
       }
+  if(b.bintype == 3) {
+    if(!(b.ny == 1)) {
+      printf("bintype = 3 (angular correlation function)  should have ybins = 1 since there is not a secondary variable.  Exiting!\n");
+      exit(1);
+      }
+    assert(b.ny == 1);
+    }
     b.dy = 1./((double) b.ny);
     b.miny = 0.;
     b.logyopt = 0;

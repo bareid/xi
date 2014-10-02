@@ -745,7 +745,7 @@ void printwp(char *outfname, xibindat b, double *wp) {
 
 //end sims output stuff.
 
-void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int DRopt,int n1, long double n1wgt, long double n2wgt,char *binfname) {
+void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int DRopt,int n1, long double n1wgt, long double n2wgt,char *binfname, double omfid, double hfid) {
 
   double xcen,ycen;
   char outfnameNp[MAXLINELEN];
@@ -756,18 +756,25 @@ void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int 
   else {
     sprintf(outfnameNp,"%s.Np.DRopt%d",foutbase,DRopt);
     }
+
+  if(b.bintype == 3) { //append with .ang to avoid overwriting 3d xi counts.
+    sprintf(outfnameNp,"%s.ang",outfnameNp);
+    }
+
   FILE *ofpNp;
   ofpNp = open_file_write(outfnameNp);
   if(DRopt != 3) {
     fprintf(ofpNp,"# nobj: %d\n",n1);
     fprintf(ofpNp,"# weight sums: %.12Le, %.12Le\n",n1wgt,n2wgt);
-    fprintf(ofpNp,"# binfile = %s\n",binfname);
+    fprintf(ofpNp,"# binfile: %s\n",binfname);
     }
   else {
     fprintf(ofpNp,"# nobj: %d\n",n1);
     fprintf(ofpNp,"# weight sums: %.12Le, %.12Le\n",n2wgt,n1wgt);
-    fprintf(ofpNp,"# binfile = %s\n",binfname);
+    fprintf(ofpNp,"# binfile: %s\n",binfname);
     }
+  fprintf(ofpNp,"# omfid: %f\n", omfid);
+  fprintf(ofpNp,"# hfid: %f\n", hfid);
 
   for(i=0;i<b.nx;i++) {
     if(b.logxopt == 0) {
@@ -783,7 +790,12 @@ void printNpairsgeneric(char *foutbase, long double *Npairsfinal,xibindat b,int 
       else {
         ycen = pow(10.,b.miny + (j+0.5)*b.dy);
         }
-      fprintf(ofpNp,"%e %e %.12Le\n",xcen,ycen,Npairsfinal[i*b.ny+j]);
+      if(b.ny > 1) {
+        fprintf(ofpNp,"%e %e %.12Le\n",xcen,ycen,Npairsfinal[i*b.ny+j]);
+        }
+      else {
+        fprintf(ofpNp,"%e %.12Le\n",xcen,Npairsfinal[i*b.ny+j]);
+        }
 
       }  //end j loop.
     } //end loop over b.nx

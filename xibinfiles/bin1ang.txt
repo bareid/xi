@@ -1,0 +1,4 @@
+# bintype: 3
+# xbins: 1 23 -4.322033443678 0.1
+# ybins: 1
+# rebinopt: 0

@@ -108,8 +108,9 @@ sepopt = 2: regular periodic box; does velocities or regular pair counting accor
 int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat b, angwgt awgt, cntparams *cp, long double *Npairsfinal) {
 
   int angwgtopt = 0;
-  if(b.bintype == 3) {
+  if(awgt.ntheta != -1) {
     angwgtopt = 1;
+    assert(b.bintype == 3);
     }
 
   if(b.logxopt == 1) {
@@ -143,6 +144,7 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
 
   //round down to nearest integer to put one particle per box on average.
   cp->NFAC = ((int) floor(pow(((float) np),1./3.)/cp->Lbox*cp->RSEPMAXAP));
+
   cp->NFAC = min(cp->NFAC,16);
   cp->NFAC = max(cp->NFAC,1);
   assert(cp->NFAC >= 1 && cp->NFAC <= 16);

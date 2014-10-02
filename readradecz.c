@@ -156,7 +156,7 @@ particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_p
     gallist = (particle *) malloc(sizeof(particle)*nRmax);
     }
 
-  if((zmax - catzmax) > 0.1*max(zmax,catzmax)) {
+  if(((zmax - catzmax) > 0.1*max(zmax,catzmax)) && (angopt == 0)) {
     fprintf(stderr,"You should update your zmax to be closer to the zmax of the input catalog, %f\n",catzmax);
     exit(1);
     }

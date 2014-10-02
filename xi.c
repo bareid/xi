@@ -439,6 +439,9 @@ int main(int argc, char *argv[]) {
   if(runp.angupweight == 1) {
     awgt = readangwgt(runp.fname1pw);
     }
+  else {
+    awgt.ntheta = -1; //signal to countpairs that we're not using angular upweighting!
+    }
 
   //this function needs to know b to find out if it's angular correlation fxn or 
   //now we do this in countpairs!
@@ -509,6 +512,9 @@ int main(int argc, char *argv[]) {
       c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&maxdist2);
       }
     maxdist = max(maxdist1,maxdist2);
+#ifdef REALLYVERBOSE
+    printf("Using maxdist = %e\n",maxdist);
+#endif
     } //end ra,dec,z preliminaries..
 
   else { //sim preliminaries.
@@ -613,7 +619,7 @@ int main(int argc, char *argv[]) {
   #endif
 
   if(runp.radeczorsim == 0 || b.bintype == 1) {
-    printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname);
+    printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname,runp.omfid,runp.hfid);
     }
   else { //sims.
     //still need to debug this.
