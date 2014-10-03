@@ -40,13 +40,17 @@ real angsepfromunitvec(const real pos1[], const real pos2[], const real originpo
   return ((real) acos(((real) ndot)));
   }
 
-real getrsep3dmaxforang(xibindat b, const real originpos[]) {
+real getrsep3dmaxforang(xibindat b, const real originpos[], real mindist) {
   real angsepmax;
   if(b.logxopt == 1) { //log binning.
     angsepmax = pow(10.,b.minx + ((real) b.nx)*b.dx);
     }
   else { //linear binning.
     angsepmax = (b.minx + ((real) b.nx)*b.dx);
+    }
+  if(b.bintype == 4) {
+    //angsepmax is currently in rp units.
+    angsepmax = 2.*asin(0.5*angsepmax/mindist);
     }
 
   //make sure angsepmax is in radians!
@@ -95,6 +99,7 @@ real getrsep3dmaxforang(xibindat b, const real originpos[]) {
   assert(fabs(a1-a2)/a1 < 2.0e-6);  //fractional error on angular separation should be small!
   assert(fabs(a1 - angsepmax) < 2.0e-6);
   real a3d = sqrt((real) rsqr);
+//  bethdidimean rsqrbig to return?  I guess not, this is exact!
   return a3d;
   }
 
@@ -123,6 +128,42 @@ int addpairsky2d(const real pos1[], const real pos2[], const real originpos[], x
   (*bin2d) = xbin;
   return 1;
   }  //end addpairsky2d.
+
+int addpairsky2dhogg(const real pos1[], const real pos2[], const real originpos[], xibindat b, int *bin2d, real chi) {
+
+  real asep = angsepfromunitvec(pos1,pos2,originpos);
+  real rsig = 2.*chi*sin(0.5*asep);
+
+  //tmp!
+/*
+  printf("p1 %e %e %e\n",pos1[0],pos1[1],pos1[2]);
+  printf("p2 %e %e %e\n",pos2[0],pos2[1],pos2[2]);
+  printf("op,chi %e %e %e %e %e %e %e\n",originpos[0],originpos[1],originpos[2],chi,asep,rsig,asep*chi);
+  fflush(stdout);
+  assert(chi >= 570. && chi <= 1100.);
+*/
+
+  int xbin;
+  if(b.logxopt == 1) {
+    if(rsig <= 0.) {
+      (*bin2d) = -1;
+      return 0;
+      }
+    rsig = log10(rsig);
+    }
+  if(rsig >= b.minx + b.nx*b.dx || rsig < b.minx) {
+    (*bin2d) = -1;
+    return 0;
+    }
+
+  xbin = min((int) floor((rsig-b.minx)/b.dx),b.nx-1);
+  #if defined(SANITYCHECKS) && defined(ASSERT_ON)
+  assert(b.bintype == 4);
+  assert(xbin >= 0 && xbin < b.nx);
+  #endif
+  (*bin2d) = xbin;
+  return 1;
+  } //end addpairsky2dhogg.
 
 //BR, make addpairsky faster!!
 int addpairsky3d(const real pos1[], const real pos2[], xibindat b, cntparams *cp, int *bin2d, real *angsep) {

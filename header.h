@@ -56,6 +56,7 @@ typedef struct {
   float wgt;
   int cell;
   int DorR;  //this can be data/random or galaxy/mass.
+  real chi;  //adding this for the hogg cross-correlations.  maybe i should compile different versions of the binary with different params so I don't have all this extra space allocated.
   } cntparticle;  //let's absorb cattype into this datatype as well.
 
 typedef struct {
@@ -63,6 +64,7 @@ typedef struct {
     real pos[3];    
     real vel[3]; //leave blank for ra/dec/z counts.
     real weight;
+    real chi;
 } particle;
 
 //from bethalexie code.
@@ -162,7 +164,7 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
 
 //functions from readradecz.c
 void radecztopos(double ra, double dec, float z, int unitsMpc, int angopt, cosmo_params cosmopfid, real pos[3], real *chi);
-particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *maxdist);
+particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *mindist, real *maxdist);
 //end functions from readradecz.c
 
 //functions from computesepnbody.c
@@ -170,8 +172,9 @@ int addpairperiodic(const real pos1[], const real pos2[], const real vel1[], con
 //end functions from computesepnbody.c
 
 //functions from computesepradecz.c
-real getrsep3dmaxforang(xibindat b, const real originpos[]);
+real getrsep3dmaxforang(xibindat b, const real originpos[], real mindist);
 int addpairsky2d(const real pos1[], const real pos2[], const real originpos[], xibindat b, int *bin2d);
+int addpairsky2dhogg(const real pos1[], const real pos2[], const real originpos[], xibindat b, int *bin2d, real chi);
 int addpairsky3d(const real pos1[], const real pos2[], xibindat b, cntparams *cp, int *bin2d, real *angsep);
 //end functions from computesepradecz.c
 
@@ -192,7 +195,7 @@ void getnbrs(int cellnum, int NFAC, int Ncell, int *nbrs, int *nnbrs, int *close
 
 //functions from countpairs.c
 //need to import these first!
-int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal);
+int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real mindist, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal);
 int countpairssim(particle *p1, int np1, particle *p2, int np2, real Lbox, xibindat b, real APperp, real APpar, long double *Npairsfinal);
 //don't expose countpairs.c to the outside world.
 

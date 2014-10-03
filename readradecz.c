@@ -6,30 +6,22 @@ extern gsl_rng *rngen;
 //not shifting by originpos anymore!!!
 
 void radecztopos(double ra, double dec, float z, int unitsMpc, int angopt, cosmo_params cosmopfid, real pos[3], real *chi) {
+
+  //change -- send back the real chi for Hogg method use, even if angopt = 1.
+  if(unitsMpc == 1) {
+    (*chi) = comoving_distMpc_lcdm((double) z, cosmopfid);
+    }
+  else {
+    (*chi) = comoving_disthinvMpc_lcdm((double) z, cosmopfid);
+    }
+
   if(angopt == 1) {
-    (*chi) = 1.;
-/*
-    (pos)[0] = cos(dec)*cos(ra)+originpos[0];
-    (pos)[1] = cos(dec)*sin(ra)+originpos[1];
-    (pos)[2] = sin(dec)+originpos[2];
-*/
     (pos)[0] = cos(dec)*cos(ra);
     (pos)[1] = cos(dec)*sin(ra);
     (pos)[2] = sin(dec);
 
     } //angular clustering option.
   else {
-    if(unitsMpc == 1) {
-      (*chi) = comoving_distMpc_lcdm((double) z, cosmopfid);
-      }
-    else {
-      (*chi) = comoving_disthinvMpc_lcdm((double) z, cosmopfid);
-      }
-/*
-    (pos)[0] = (*chi)*cos(dec)*cos(ra)+originpos[0];
-    (pos)[1] = (*chi)*cos(dec)*sin(ra)+originpos[1];
-    (pos)[2] = (*chi)*sin(dec)+originpos[2];
-*/
     (pos)[0] = (*chi)*cos(dec)*cos(ra);
     (pos)[1] = (*chi)*cos(dec)*sin(ra);
     (pos)[2] = (*chi)*sin(dec);
@@ -89,7 +81,10 @@ float getcatzmax(char *infilename, int ftype) {
   return myzmax;
   }  //end getcatzmax
 
-particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *maxdist) {
+particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *mindist, real *maxdist) {
+
+  printf("hello beth, %d %e\n",DorR,ndownRR);
+
   FILE *ifp;
   ifp = open_file_read(infilename);
   int header, linestot;
@@ -103,13 +98,15 @@ particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_p
   float catzmax = -1;
   particle *gallist;
 
+  float mychimin = 20000.;
+
   int dosubsample = 1;
   if(fabs(ndownRR - 1.0) < 1.0e-3 || ndownRR < 0.) {
     dosubsample = 0;
     }
 
   double ndownthresh = 1./ndownRR;
-  int nRmax;
+  int nRmax = -1;
 
   (*ntot) = 0;
   (*wgttot) = 0.;
@@ -211,7 +208,9 @@ switch(ftype) {
         }
       ra = ra*M_PI/180.;
       dec = dec*M_PI/180.;
-      radecztopos(ra,dec,z, unitsMpc, angopt, cosmopfid, gallist[gindx].pos, &chi);  //chi used to be saved in gallist, now its not.
+      radecztopos(ra,dec,z, unitsMpc, angopt, cosmopfid, gallist[gindx].pos, &chi);  //chi used to be saved in gallist, now its not.  and now it is again!!
+      mychimin = min(mychimin,chi);
+      gallist[gindx].chi = chi;
 //void radecztopos(double ra, double dec, float z, int unitsMpc, int angopt, cosmo_params cosmopfid, real pos[3], real *chi) {
       for(ii=0;ii<=2;ii++) {
         //ipos[ii] = ((int) floor(gallist[gindx].pos[ii]*Ncell/Lbox));
@@ -253,10 +252,12 @@ switch(ftype) {
   #endif
 
   //compute the maximum distance away to set Lbox for this data set.
+  (*mindist) = mychimin;
   (*maxdist) = -1000.;
   for(ii=0;ii<=2;ii++) {
     (*maxdist) = max(fabs(posmin[ii]),(*maxdist));
     (*maxdist) = max(fabs(posmax[ii]),(*maxdist));
      }
+  
   return gallist;
   } //end readcat

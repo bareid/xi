@@ -15,6 +15,7 @@ typedef struct {
   float zmax;
   int DRopt;
   float ndownRR;
+  float ndownDD;
   unsigned int unsignedintseed; 
   char fname1pw[MAXLINELEN];
   int angupweight;
@@ -51,6 +52,7 @@ void printrundat(runparams p) {
     printf("zmax: %f\n",p.zmax);
     printf("DRopt: %d\n",p.DRopt);
     printf("ndownRR: %f\n",p.ndownRR);
+    printf("ndownDD: %f\n",p.ndownDD);
     printf("unsignedintseed: %u\n",p.unsignedintseed);
     }
   else {
@@ -196,11 +198,18 @@ runparams parserunfile(char *infilename) {
         gotlist[13] = 1;
         continue;
         }
+      if(strstr(line,"ndownDD")) {  //optional for data.
+        r = strchr(line,'=');
+        assert(r);
+        myparams.ndownDD = atof(r+1);
+        gotlist[14] = 1;
+        continue;
+        }
       if(strstr(line,"rngenseed")) { //optional for data.
         r = strchr(line,'=');
         assert(r);
         myparams.unsignedintseed = ((unsigned int) (atoi(r+1)));
-        gotlist[14] = 1;
+        gotlist[15] = 1;
         assert(myparams.unsignedintseed > 0);
         continue;
         }
@@ -209,21 +218,21 @@ runparams parserunfile(char *infilename) {
         assert(r);
         sscanf(r+1,"%s\n",myparams.fname1pw);
         myparams.angupweight = 1;
-        gotlist[15] = 1;
+        gotlist[16] = 1;
         continue;
         }
       if(strstr(line,"Lbox")) {
         r = strchr(line,'=');
         assert(r);
         myparams.Lbox = atof(r+1);
-        gotlist[16] = 1;
+        gotlist[17] = 1;
         continue;
         }
       if(strstr(line,"abox")) {
         r = strchr(line,'=');
         assert(r);
         myparams.abox = atof(r+1);
-        gotlist[17] = 1;
+        gotlist[18] = 1;
         continue;
         }
       if(strstr(line,"zspaceaxis")) {
@@ -231,63 +240,63 @@ runparams parserunfile(char *infilename) {
         assert(r);
         myparams.zspaceaxis = atoi(r+1);
         assert(myparams.zspaceaxis >= -1 && myparams.zspaceaxis <= 2);
-        gotlist[18] = 1;
+        gotlist[19] = 1;
         continue;
         }
       if(strstr(line,"lg10Mmin")) {
         r = strchr(line,'=');
         assert(r);
         myparams.lg10Mmin = atof(r+1);
-        gotlist[19] = 1;
+        gotlist[20] = 1;
         continue;
         }
       if(strstr(line,"lg10Mmax")) {
         r = strchr(line,'=');
         assert(r);
         myparams.lg10Mmax = atof(r+1);
-        gotlist[20] = 1;
+        gotlist[21] = 1;
         continue;
         }
       if(strstr(line,"lg10Mmin2")) {
         r = strchr(line,'=');
         assert(r);
         myparams.lg10Mmin2 = atof(r+1);
-        gotlist[21] = 1;
+        gotlist[22] = 1;
         continue;
         }
       if(strstr(line,"lg10Mmax2")) {
         r = strchr(line,'=');
         assert(r);
         myparams.lg10Mmax2 = atof(r+1);
-        gotlist[22] = 1;
+        gotlist[23] = 1;
         continue;
         }
       if(strstr(line,"D2ftype")) {
         r = strchr(line,'=');
         assert(r);
         myparams.D2ftype = atoi(r+1);
-        gotlist[23] = 1;
+        gotlist[24] = 1;
         continue;
         }
       if(strstr(line,"D2filename")) {
         r = strchr(line,'=');
         assert(r);
         sscanf(r+1,"%s\n",myparams.D2filename);
-        gotlist[24] = 1;
+        gotlist[25] = 1;
         continue;
         }
       if(strstr(line,"APperp")) {
         r = strchr(line,'=');
         assert(r);
         myparams.APperp = atof(r+1);
-        gotlist[25] = 1;
+        gotlist[26] = 1;
         continue;
         }
       if(strstr(line,"APpar")) {
         r = strchr(line,'=');
         assert(r);
         myparams.APpar = atof(r+1);
-        gotlist[26] = 1;
+        gotlist[27] = 1;
         continue;
         }
       } //end !feof
@@ -311,14 +320,17 @@ runparams parserunfile(char *infilename) {
   if(gotlist[13] == 0) {  //didn't get ndown.
     myparams.ndownRR = 1.0;
     }
-  if(gotlist[14] == 0) {
+  if(gotlist[14] == 0) {  //didn't get ndown.
+    myparams.ndownDD = 1.0;
+    }
+  if(gotlist[15] == 0) {
     myparams.unsignedintseed = devrand();
     if(myparams.unsignedintseed == 1)  {
       fprintf(stderr,"initialize_rngen failed!  Exiting\n");
       exit(1);
       }
     }
-  if(gotlist[15] == 0) {
+  if(gotlist[16] == 0) {
     myparams.angupweight = 0;
     }
   break;  
@@ -329,32 +341,32 @@ runparams parserunfile(char *infilename) {
       exit(1);
       }
     }
-  for(i=16;i<=18;i++) { 
+  for(i=17;i<=19;i++) { 
     if(gotlist[i] != 1) {
       fprintf(stderr,"missing elt %d from sim runparams, aborting!\n",i);
       exit(1);
       }
     }
   //specify default behavior for the optional simulation inputs.
-  if(gotlist[19] == 0) { 
+  if(gotlist[20] == 0) { 
     myparams.lg10Mmin = -1.;
     }
-  if(gotlist[20] == 0) {  
+  if(gotlist[21] == 0) {  
     myparams.lg10Mmax = 17.;
     }
-  if(gotlist[21] == 0) {  
+  if(gotlist[22] == 0) {  
     myparams.lg10Mmin2 = myparams.lg10Mmin;
     }
-  if(gotlist[22] == 0) {  
+  if(gotlist[23] == 0) {  
     myparams.lg10Mmax2 = myparams.lg10Mmax;
     }
-  if(gotlist[23] == 0) {  
+  if(gotlist[24] == 0) {  
     myparams.D2ftype = -1;
     }
-  if(gotlist[25] == 0) {  
+  if(gotlist[26] == 0) {  
     myparams.APperp = 1.0;
     }
-  if(gotlist[26] == 0) {  
+  if(gotlist[27] == 0) {  
     myparams.APpar = 1.0;
     }
   //no need to specify default for D2filename.
@@ -431,7 +443,7 @@ int main(int argc, char *argv[]) {
 
   b = readbinfile(runp.binfname); 
   int angopt = 0;
-  if(b.bintype == 3) {
+  if(b.bintype == 3 || b.bintype == 4) {
     angopt = 1;
     assert(b.ny == 1);
     }
@@ -471,6 +483,11 @@ int main(int argc, char *argv[]) {
   real maxdist2 = -1000.;
   real maxdist; //this will be maxdist between the two catalogs.
 
+  //this is needed for the Hogg method.  Minimum distance scale sets maximum angular scale you need to look for pairs at.
+  real mindist1 = 200000.;
+  real mindist2 = 200000.;
+  real mindist; //this will be mindist between the two catalogs.
+
   n1wgt = 0.;
   n2wgt = 0.;
 
@@ -490,16 +507,16 @@ int main(int argc, char *argv[]) {
     assert(runp.Rftype >= 1 && runp.Rftype <= 4); 
 
 //BR next: put in read in data and/or random catalogs.
-    assert(runp.DRopt >= 1 && runp.DRopt <= 3);
+    assert((runp.DRopt >= 1 && runp.DRopt <= 3) || (runp.DRopt >= 11 && runp.DRopt <= 14));
     if(runp.DRopt == 1) {
       DorR = 0;
       autoorcross = 0;
-      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt, &maxdist1);
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt, &mindist1, &maxdist1);
       }
     if(runp.DRopt == 3) {
       DorR = 1;
       autoorcross = 0;
-      c1tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n1, &n1wgt, &maxdist1);
+      c1tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n1, &n1wgt, &mindist1, &maxdist1);
       }
     if(runp.DRopt == 2) {  //need to read in both D and R catalogs and condense them.
       //I think we want to enforce no downsampling for DR counts.  It's not necessary in principle
@@ -507,13 +524,30 @@ int main(int argc, char *argv[]) {
       autoorcross = 1;
       assert(fabs(runp.ndownRR - 1.0) < 2.0e-5);
       DorR = 0;
-      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt,&maxdist1);
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt,&mindist1,&maxdist1);
       DorR = 1;
-      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&maxdist2);
+      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&mindist2,&maxdist2);
       }
+    if(runp.DRopt >= 11 && runp.DRopt <= 14) {  //now "random" catalog is imaging, "data" catalog is spectroscopy.
+      autoorcross = 1;
+      if(runp.DRopt <= 12) {
+        assert(fabs(runp.ndownDD - 1.0) < 2.0e-5);
+        }
+      if(runp.DRopt == 11 || runp.DRopt == 13) {
+        assert(fabs(runp.ndownRR - 1.0) < 2.0e-5);
+        }
+      DorR = 0;
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownDD, &n1, &n1wgt,&mindist1,&maxdist1);
+      DorR = 1;
+      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&mindist2,&maxdist2);
+      } //end DRopt == 11-14
+
     maxdist = max(maxdist1,maxdist2);
+//    mindist = min(mindist1,mindist2);
+    mindist = mindist1; //use the spectroscopic catalog to get mindist.
 #ifdef REALLYVERBOSE
     printf("Using maxdist = %e\n",maxdist);
+    printf("Using mindist = %e\n",mindist);
 #endif
     } //end ra,dec,z preliminaries..
 
@@ -607,7 +641,7 @@ int main(int argc, char *argv[]) {
   long double *Npairsfinal;
   Npairsfinal = (long double *) malloc(sizeof(long double)*(b.nbins2d));
   if(runp.radeczorsim == 0) {
-    countpairsradecz(c1tmp,n1,c2tmp,n2,maxdist,b,awgt,Npairsfinal);
+    countpairsradecz(c1tmp,n1,c2tmp,n2,mindist,maxdist,b,awgt,Npairsfinal);
     }
   else { //sim.
     //no need to pass originpos for a sim because it will be set to 0.  Just need Lbox.

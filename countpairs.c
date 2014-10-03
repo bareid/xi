@@ -19,7 +19,7 @@ const int SORTINDX = 2;  //this shows up in the compare_sort, I don't know how t
 
 
 //set up bounds for rmin/rmax.
-int setpairrminmax(xibindat b, int radeczorsim, real APperp, real APpar, cntparams *cp) {
+int setpairrminmax(xibindat b, int radeczorsim, real APperp, real APpar, real mindist, cntparams *cp) {
 
   double maxx, maxy;
   double maxxAP, maxyAP;
@@ -28,8 +28,21 @@ int setpairrminmax(xibindat b, int radeczorsim, real APperp, real APpar, cntpara
   real APmax = max(APperp,APpar);
 
   if(b.bintype == 3) {
-    cp->RSEPMAXAP = getrsep3dmaxforang(b,cp->originpos);
+    cp->RSEPMAXAP = getrsep3dmaxforang(b,cp->originpos,-1.);
 //we don't need RSEPMIN,RSEPMAX,rminsqr,rmaxsqr
+    }
+
+  if(b.bintype == 4) {
+    cp->RSEPMAXAP = getrsep3dmaxforang(b,cp->originpos,mindist);
+    if(b.logxopt == 1) {
+      maxx = pow(10.,b.minx + ((double) b.nx)*b.dx);
+      cp->rminsqr = pow(10.,b.minx)*pow(10.,b.minx);
+      }
+    else {
+      maxx = (b.minx + ((double) b.nx)*b.dx);
+      cp->rminsqr = (b.minx*b.minx);
+      }
+    cp->RSEPMAX = maxx;
     }
 
   if(b.bintype == 0 || b.bintype == 2) {  //xi_ell
@@ -83,6 +96,12 @@ int setpairrminmax(xibindat b, int radeczorsim, real APperp, real APpar, cntpara
     }  //xi_grid
 
   cp->rmaxsqr = cp->RSEPMAX*cp->RSEPMAX;
+
+  #ifdef REALLYVERBOSE
+  printf("bintype: %d\n",b.bintype);
+  printf("%e %e %e %e\n",cp->RSEPMAXAP,cp->rminsqr,cp->rmaxsqr,cp->RSEPMAX);
+  #endif
+
   return 0;
   }
 
@@ -102,6 +121,7 @@ int compare_cntparticle_sort(const void *a, const void *b)  {
 sepopt = 0: regular 3d correlation function on radecz.
 sepopt = 1: angular 2d correlation function on radecz.
 sepopt = 2: regular periodic box; does velocities or regular pair counting according to bintype.
+sepopt = 3: hogg option.
 */
 
 //python needs to know particle, xibindat.
@@ -434,6 +454,14 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
           inbin = addpairperiodic(plist[xa].pos, plist[ya].pos, vtmp1, vtmp2, b, cp, &bin2d, &vr, &v2perp, &v2par);
           #endif
           break; //end sepopt = 2
+            case(3):
+          if(plist[xa].DorR == 0) {
+            inbin = addpairsky2dhogg(plist[xa].pos, plist[ya].pos, cp->originpos, b, &bin2d, plist[xa].chi);
+            }
+          else {
+            inbin = addpairsky2dhogg(plist[xa].pos, plist[ya].pos, cp->originpos, b, &bin2d, plist[ya].chi);
+            }
+          break;
             default:
           exit(1);
           } //end switch on sepopt (type of pair counter).
@@ -535,7 +563,7 @@ int countpairssim(particle *p1, int np1, particle *p2, int np2, real Lbox, xibin
   else { //calculation in redshift space.
     cp.APscale[b.zspaceaxis] = APpar;
     }
-  setpairrminmax(b, 1, APperp, APpar, &cp);
+  setpairrminmax(b, 1, APperp, APpar, -1, &cp);
   sepopt = 2; // will do velocity or regular pair counts.
 
   //change type to cntparticle, put in one list and sort.
@@ -637,10 +665,14 @@ int countpairssimP(real *p1, real *v1, real *w1, int np1, real *p2, real *v2, re
 */
 
 //BR: generalize to read in ra,dec and do the spherical coordinate transformation here?  LATER.
-int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal) {
+int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real mindist, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal) {
+
+  if(mindist >= maxdist) {
+    assert(maxdist <= 1.0); //make sure it's an angopt Hogg situation.
+    }
 
   int angopt = 0;
-  if(b.bintype == 3) {
+  if(b.bintype == 3 || b.bintype == 4) {
     angopt = 1;
     assert(b.ny == 1);
     }
@@ -669,7 +701,7 @@ int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist,
     cp.Lbox = 2.*maxdist*1.01; //avoid floating point rounding errors.
     }
   else { //computing a 2d (angular) correlation fxn with sky coordinates.
-    assert(b.bintype == 3);
+    assert(b.bintype == 3 || b.bintype == 4);
     cp.Lbox = 2.;
     }
   for(i=0;i<=2;i++) {
@@ -683,6 +715,7 @@ int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist,
       ctot[i].vel[j] = p1[i].vel[j];
       #endif
       ctot[i].wgt = p1[i].weight;
+      ctot[i].chi = p1[i].chi;
       ctot[i].DorR = 0;
       }
     }
@@ -697,13 +730,16 @@ int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real maxdist,
       }
     }
 
-  setpairrminmax(b, 0, 1.0, 1.0,&cp);
+  setpairrminmax(b, 0, 1.0, 1.0,mindist,&cp);
 
   if(angopt == 0) {
     sepopt = 0;
     }
   else {
     sepopt = 1;
+    }
+  if(b.bintype == 4) {
+    sepopt = 3;
     }
   countpairs(ctot,ntot,autoorcross,sepopt,b,awgt,&cp,Npairsfinal);
   free(ctot);
