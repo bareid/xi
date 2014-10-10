@@ -81,7 +81,7 @@ float getcatzmax(char *infilename, int ftype) {
   return myzmax;
   }  //end getcatzmax
 
-particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *mindist, real *maxdist) {
+particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, long double *wgtSI, real *mindist, real *maxdist) {
 
   printf("hello beth, %d %e\n",DorR,ndownRR);
 
@@ -92,6 +92,8 @@ particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_p
   double ra, dec;
   float z,finalwgt;
   (*wgttot) = 0.;
+  (*wgtSI) = 0.; //this is for the Hogg S/I cross correlation.
+
   int i,ii;
   char line[MAXLINELEN];
   int ipos[3];
@@ -110,6 +112,7 @@ particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_p
 
   (*ntot) = 0;
   (*wgttot) = 0.;
+  (*wgtSI) = 0.;
 
   for(i=0;i<header;i++) {
     fgets(line,MAXLINELEN,ifp);
@@ -219,6 +222,7 @@ switch(ftype) {
         }
       gallist[gindx].weight = finalwgt;
       (*wgttot) += finalwgt;
+      (*wgtSI) += finalwgt/(chi*chi);
       //this is now set in the countpairs part.
       //gallist[gindx].DorR = DorR;
       //gallist[gindx].cell = i2n(ipos);  //going to assign this in the countpairs section.

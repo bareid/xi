@@ -475,6 +475,7 @@ int main(int argc, char *argv[]) {
 
   int n1, n2;
   long double n1wgt, n2wgt;
+  long double n1wgtSI, n2wgtSI;
   particle *c1tmp, *c2tmp;
 
   int i;
@@ -490,6 +491,8 @@ int main(int argc, char *argv[]) {
 
   n1wgt = 0.;
   n2wgt = 0.;
+  n1wgtSI = 0.;
+  n2wgtSI = 0.;
 
   //for 
   c2tmp = NULL;
@@ -511,12 +514,12 @@ int main(int argc, char *argv[]) {
     if(runp.DRopt == 1) {
       DorR = 0;
       autoorcross = 0;
-      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt, &mindist1, &maxdist1);
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt, &n1wgtSI, &mindist1, &maxdist1);
       }
     if(runp.DRopt == 3) {
       DorR = 1;
       autoorcross = 0;
-      c1tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n1, &n1wgt, &mindist1, &maxdist1);
+      c1tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n1, &n1wgt, &n1wgtSI, &mindist1, &maxdist1);
       }
     if(runp.DRopt == 2) {  //need to read in both D and R catalogs and condense them.
       //I think we want to enforce no downsampling for DR counts.  It's not necessary in principle
@@ -524,9 +527,9 @@ int main(int argc, char *argv[]) {
       autoorcross = 1;
       assert(fabs(runp.ndownRR - 1.0) < 2.0e-5);
       DorR = 0;
-      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt,&mindist1,&maxdist1);
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, ndownRRnone, &n1, &n1wgt, &n1wgtSI, &mindist1,&maxdist1);
       DorR = 1;
-      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&mindist2,&maxdist2);
+      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt, &n2wgtSI, &mindist2,&maxdist2);
       }
     if(runp.DRopt >= 11 && runp.DRopt <= 14) {  //now "random" catalog is imaging, "data" catalog is spectroscopy.
       autoorcross = 1;
@@ -537,9 +540,9 @@ int main(int argc, char *argv[]) {
         assert(fabs(runp.ndownRR - 1.0) < 2.0e-5);
         }
       DorR = 0;
-      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownDD, &n1, &n1wgt,&mindist1,&maxdist1);
+      c1tmp = readcat(runp.Dfilename, runp.Dftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownDD, &n1, &n1wgt, &n1wgtSI, &mindist1,&maxdist1);
       DorR = 1;
-      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt,&mindist2,&maxdist2);
+      c2tmp = readcat(runp.Rfilename, runp.Rftype, runp.unitsMpc, angopt, cosmopfid, runp.zmin, runp.zmax, DorR, runp.ndownRR, &n2, &n2wgt, &n2wgtSI, &mindist2,&maxdist2);
       } //end DRopt == 11-14
 
     maxdist = max(maxdist1,maxdist2);
@@ -655,10 +658,17 @@ int main(int argc, char *argv[]) {
   if(runp.radeczorsim == 0 || b.bintype == 1) {
     printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname,runp.omfid,runp.hfid);
     }
-  else { //sims.
+  if(runp.radeczorsim == 1 && b.bintype != 1) { //sims.
     //still need to debug this.
     assert(autoorcross==0);
     printNpairssim(n1,n2,autoorcross,b,runp.Lbox,runp.APperp,runp.APpar,runp.foutbase,Npairsfinal);
+    }
+
+  if(runp.radeczorsim == 0 && ((runp.DRopt == 11) || (runp.DRopt == 13))) {
+    printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname,runp.omfid,runp.hfid); 
+    }
+  if(runp.radeczorsim == 0 && ((runp.DRopt == 12) || (runp.DRopt == 14))) {
+    printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgtSI,n2wgt,runp.binfname,runp.omfid,runp.hfid); 
     }
 
   if(runp.angupweight == 1) {

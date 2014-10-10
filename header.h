@@ -164,7 +164,7 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
 
 //functions from readradecz.c
 void radecztopos(double ra, double dec, float z, int unitsMpc, int angopt, cosmo_params cosmopfid, real pos[3], real *chi);
-particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, real *mindist, real *maxdist);
+particle *readcat(char *infilename, int ftype, int unitsMpc, int angopt, cosmo_params cosmopfid, float zmin, float zmax, int DorR, float ndownRR, int *ntot, long double *wgttot, long double *wgtSI, real *mindist, real *maxdist);
 //end functions from readradecz.c
 
 //functions from computesepnbody.c
