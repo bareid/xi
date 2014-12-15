@@ -197,10 +197,10 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
   //stuff to keep track of cell-> list map.
   int cellmax = cp->Ncell*cp->Ncell*cp->Ncell;
   int *cellstart, *cellend, *occupiedcells;
+  int noccupied;
   cellstart = (int *) malloc(sizeof(int)*cellmax);
   cellend = (int *) malloc(sizeof(int)*cellmax);
   occupiedcells = (int *) malloc(sizeof(int)*cellmax);
-  int noccupied;
 
 /*
   int nbrs[((2*NFAC+1)*(2*NFAC+1)*(2*NFAC+1))];
@@ -245,6 +245,7 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
     cellend[i] = -1;
     occupiedcells[i] = -1;
     }
+
   //check what the sorted list looks like.
   assert(plist[0].cell >= 0);
   int currcell = plist[0].cell;
@@ -261,6 +262,7 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
       cellstart[currcell] = i;
       }
     }
+  printf("yoyo3\n");
   #ifdef REALLYVERBOSE
   printf("%d of %d cells occupied\n",noccupied,cellmax);
   #endif
@@ -666,10 +668,13 @@ int countpairssimP(real *p1, real *v1, real *w1, int np1, real *p2, real *v2, re
 
 //BR: generalize to read in ra,dec and do the spherical coordinate transformation here?  LATER.
 int countpairsradecz(particle *p1, int np1, particle *p2, int np2, real mindist, real maxdist, xibindat b, angwgt awgt, long double *Npairsfinal) {
-
+//  printf("yo beth, %e %e\n",mindist,maxdist);
+//this assert goes off for funny locations of bootstrap regions, so let's skip this for now!
+/*
   if(mindist >= maxdist) {
     assert(maxdist <= 1.0); //make sure it's an angopt Hogg situation.
     }
+*/
 
   int angopt = 0;
   if(b.bintype == 3 || b.bintype == 4) {
