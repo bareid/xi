@@ -2,8 +2,8 @@
 
 particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real vscale, float Mmin, float Mmax, int DorR, int *ngals) {
 
-  double min[3];
-  double max[3];
+  double minP[3];
+  double maxP[3];
 
   real tmppos[3];
   real tmpvel[3];
@@ -14,8 +14,8 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
   real myzspacepos;
 
 
-  min[0] = min[1] = min[2] = 10000.;
-  max[0] = max[1] = max[2] = -10000.;
+  minP[0] = minP[1] = minP[2] = 10000.;
+  maxP[0] = maxP[1] = maxP[2] = -10000.;
 
   int linecount, headercount;
   int i,j;
@@ -74,6 +74,10 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
     assert(headercount == 0);
     (*ngals) = linecount; 
     }
+  if(whichcat == 6) {
+    assert(headercount == 2);
+    (*ngals) = linecount - headercount; 
+    }
 
   particle *c1 = (particle *) malloc(sizeof(particle)*(*ngals));
   #ifdef REALLYVERBOSE 
@@ -111,56 +115,72 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
         }
       for(j=0;j<=2;j++) {
         assert(c1[iindx].pos[j] >= 0. && c1[iindx].pos[j] <= Lbox);
-        min[j] = min(c1[iindx].pos[j],min[j]);
-        max[j] = max(c1[iindx].pos[j],max[j]);
+        minP[j] = min(c1[iindx].pos[j],minP[j]);
+        maxP[j] = max(c1[iindx].pos[j],maxP[j]);
         }
       } //2
     else {
-      #ifdef REALFLOAT
-      fscanf(ifp,"%E %E %E %E %E %E\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
-      #else
-      fscanf(ifp,"%lE %lE %lE %lE %lE %lE\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
-      #endif
-      #ifdef VOPT
-      for(ii=0;ii<=2;ii++) {
-        c1[iindx].vel[ii] = tmpvel[ii];
+      //JT mock challenge catalog.
+      if(whichcat == 6) {
+        #ifdef REALFLOAT
+        fscanf(ifp,"%f %f %f %f %f %f\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
+        #else
+        fscanf(ifp,"%lf %lf %lf %lf %lf %lf\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
+        #endif
+        for(j=0;j<=2;j++) {
+          fixbox(c1[iindx].pos[j],Lbox);
+          minP[j] = min(c1[iindx].pos[j],minP[j]);
+          maxP[j] = max(c1[iindx].pos[j],maxP[j]);
+          }
+        mycntchk += 1;
         }
-      #endif
-      if(whichcat == 0) {
-        fscanf(ifp,"%d %d %f\n",&i1,&i2,&f1);
-        mycntchk += 1;
-        } //0
-      if(whichcat == 1) {
-        fscanf(ifp,"%d %f\n",&i1,&lg10Mfof);
-        if(lg10Mfof >= Mmin && lg10Mfof <= Mmax) {
+      else {
+        #ifdef REALFLOAT
+        fscanf(ifp,"%E %E %E %E %E %E\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
+        #else
+        fscanf(ifp,"%lE %lE %lE %lE %lE %lE\n",&(c1[iindx].pos[0]),&(c1[iindx].pos[1]),&(c1[iindx].pos[2]),&(tmpvel[0]),&(tmpvel[1]),&(tmpvel[2]));
+        #endif
+        #ifdef VOPT
+        for(ii=0;ii<=2;ii++) {
+          c1[iindx].vel[ii] = tmpvel[ii];
+          }
+        #endif
+        if(whichcat == 0) {
+          fscanf(ifp,"%d %d %f\n",&i1,&i2,&f1);
           mycntchk += 1;
-          }
-        else {
-          continue;
-          }
-        } //1
-      if(whichcat == 4) {
-        fscanf(ifp,"%d %f %f\n",&i1,&lg10Mfof,&lg10M180b);
-        if(lg10Mfof >= Mmin && lg10Mfof <= Mmax) {
+          } //0
+        if(whichcat == 1) {
+          fscanf(ifp,"%d %f\n",&i1,&lg10Mfof);
+          if(lg10Mfof >= Mmin && lg10Mfof <= Mmax) {
+            mycntchk += 1;
+            }
+          else {
+            continue;
+            }
+          } //1
+        if(whichcat == 4) {
+          fscanf(ifp,"%d %f %f\n",&i1,&lg10Mfof,&lg10M180b);
+          if(lg10Mfof >= Mmin && lg10Mfof <= Mmax) {
+            mycntchk += 1;
+            }
+          else {
+            continue;
+            }
+          } //4
+        if(whichcat == 3) {
+          fscanf(ifp,"%f %d\n",&f1,&i1);
           mycntchk += 1;
-          }
-        else {
-          continue;
-          }
-        } //4
-      if(whichcat == 3) {
-        fscanf(ifp,"%f %d\n",&f1,&i1);
-        mycntchk += 1;
-        } // 3
-      if(whichcat == 5) {
-        fscanf(ifp,"%d %f %f\n",&i1,&lg10Mfof,&lg10M180b);
-        if(lg10M180b >= Mmin && lg10M180b <= Mmax) {
-          mycntchk += 1;
-          }
-        else {
-          continue;
-          }
-        } //5
+          } // 3
+        if(whichcat == 5) {
+          fscanf(ifp,"%d %f %f\n",&i1,&lg10Mfof,&lg10M180b);
+          if(lg10M180b >= Mmin && lg10M180b <= Mmax) {
+            mycntchk += 1;
+            }
+          else {
+            continue;
+            }
+          } //5
+        } //else whichcat != 6
       } //else !2
     if(whichcat == 0 || whichcat == 1 || whichcat == 4 || whichcat == 5) {
       if(zspaceaxis >= 0) {
@@ -175,8 +195,8 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
           c1[iindx].vel[j] = c1[iindx].vel[j]*Lbox;
           #endif
           }
-        min[j] = min(c1[iindx].pos[j],min[j]);
-        max[j] = max(c1[iindx].pos[j],max[j]);
+        minP[j] = min(c1[iindx].pos[j],minP[j]);
+        maxP[j] = max(c1[iindx].pos[j],maxP[j]);
         }
       } //0,1,4,5
     if(whichcat == 3) {
@@ -190,8 +210,8 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
         #ifdef VOPT
         c1[iindx].vel[j] = c1[iindx].vel[j]*vscale;
         #endif
-        min[j] = min(c1[iindx].pos[j],min[j]);
-        max[j] = max(c1[iindx].pos[j],max[j]);
+        minP[j] = min(c1[iindx].pos[j],minP[j]);
+        maxP[j] = max(c1[iindx].pos[j],maxP[j]);
         }
       } //3
     c1[iindx].weight = 1.0;
@@ -210,11 +230,19 @@ particle *readsimcat(char *fname, int whichcat, real Lbox, int zspaceaxis, real 
       break;
       }
     }  //end for loop.
+  printf("%d %d\n",mycntchk,iindx);
   assert(mycntchk == iindx);
   fclose(ifp);
   #ifdef REALLYVERBOSE
   printf("this many gals,%d\n",*ngals);
   #endif
+
+  if(whichcat == 6) {
+    printf("Jeremy cat min/max\n");
+    printf("%f %f %f\n",minP[0],minP[1],minP[2]);
+    printf("%f %f %f\n",maxP[0],maxP[1],maxP[2]);
+    }
+
   return c1; 
   }
 

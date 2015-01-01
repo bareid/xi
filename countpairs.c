@@ -229,7 +229,9 @@ int countpairs(cntparticle *plist,int np, int autoorcross, int sepopt, xibindat 
       ipos[j] = ((int) floor(plist[i].pos[j]*cp->Ncell/cp->Lbox));
       #ifdef SANITYCHECKS
       if(!(ipos[j] >= 0 && ipos[j] < cp->Ncell)) {
-        printf("%d %e %e %d %d\n",i,plist[i].pos[j],plist[i].pos[j]/cp->Lbox,cp->Ncell,ipos[j]);
+        printf("edge case! %d %e %e %d %d\n",i,plist[i].pos[j],plist[i].pos[j]/cp->Lbox,cp->Ncell,ipos[j]);
+        assert(fabs(plist[i].pos[j]-cp->Lbox) < 0.001);
+        ipos[j] = ipos[j] - 1;
         }
       assert(ipos[j] >= 0 && ipos[j] < cp->Ncell);
       #endif

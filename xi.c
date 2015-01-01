@@ -566,7 +566,7 @@ int main(int argc, char *argv[]) {
     b.periodicopt = 1;  //not fixing this took hours of bug hunting!! gaa!!
     b.zspaceaxis = runp.zspaceaxis;
     b.ellmaxdata = 4;
-    assert(runp.Dftype >= 0 && runp.Dftype <= 5);
+    assert(runp.Dftype >= 0 && runp.Dftype <= 6);
     if(runp.Dftype == 3) {
       if(runp.D2ftype != -1) {
         assert(runp.D2ftype == 3);
@@ -581,7 +581,7 @@ int main(int argc, char *argv[]) {
       vscale = 1.;
       }
     autoorcross = 1; //assume cross-correlation unless they're equal.
-    assert(runp.Dftype >= 0 && runp.Dftype <= 5);
+    assert(runp.Dftype >= 0 && runp.Dftype <= 6);
 
     if(runp.D2ftype != -1) {  //cross-correlation with dark matter particles.
       assert(runp.D2ftype >= 0 && runp.D2ftype <= 5);
@@ -655,7 +655,24 @@ int main(int argc, char *argv[]) {
   printf("counts took %e\n",difftime(time2,time1)); 
   #endif
 
-  if(runp.radeczorsim == 0 || b.bintype == 1) {
+  //new variables for printing wp.
+  char tmpfname[MAXLINELEN];
+  double *mywp;
+
+  if(runp.radeczorsim == 1 && b.bintype == 1) {
+    printNpairssim(n1,n2,autoorcross,b,runp.Lbox,runp.APperp,runp.APpar,runp.foutbase,Npairsfinal);
+    //also print a wp file if there's linear binning in xigrid?
+    if(b.miny == 0. && b.logyopt == 0 && autoorcross == 0) {
+      mywp = (double *) malloc(sizeof(double) * b.nx);
+      b.rpimax = b.ny*b.dy;
+      wpperiodic(Npairsfinal,b,n1,runp.Lbox,runp.APperp,runp.APpar,mywp);
+      sprintf(tmpfname,"%s.wp",runp.foutbase);
+      printwp(tmpfname,b,mywp);
+      free(mywp);
+      }
+    }
+
+  if(runp.radeczorsim == 0) {
     printNpairsgeneric(runp.foutbase,Npairsfinal,b,runp.DRopt,n1,n1wgt,n2wgt,runp.binfname,runp.omfid,runp.hfid);
     }
   if(runp.radeczorsim == 1 && b.bintype != 1) { //sims.
