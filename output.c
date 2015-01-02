@@ -826,7 +826,8 @@ void printNpairssim(int n1, int n2, int autoorcross, xibindat b, real Lbox, real
   double **xi;
   double *xiellrebin;
   long double rmin, rmax, rcen;
-  long double myboxvol = ((long double) Lbox)*((long double) Lbox)*((long double) Lbox);
+  long double APrescale = ((long double) (APperp*APperp*APpar));
+  long double myboxvol = ((long double) Lbox)*((long double) Lbox)*((long double) Lbox)/APrescale;
   long double mynbar;
   long double mynbar2;
   long double mynvoltimesNdmu;
