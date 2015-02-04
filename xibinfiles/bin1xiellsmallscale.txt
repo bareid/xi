@@ -1,0 +1,4 @@
+# bintype: 0
+# xbins: 1 74 -1.015 0.035
+# ybins: 200
+# rebinopt: 0
