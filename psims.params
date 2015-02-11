@@ -6,7 +6,7 @@ radeczorsim = 1
 unitsMpc = 0 
 ## if you're working with a simulation, set om/h to values of simulation (unless you're playing with the Alcock-Paczynski effect).  BEWARE THE VELOCITY CONVERSION FACTOR USES THIS OMFID VALUE!
 omfid = 0.292 
-hfid = 0.7
+hfid = 0.69
 binfname = xibinfiles/bin1simssmall.txt
 foutbase = tests/simtestbin1simsmall.txt
 Dftype = 1
